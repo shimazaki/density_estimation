@@ -1,8 +1,8 @@
 function [y,t,optw,gs,C,confb95,yb] = ssvkernel(x,tin,option)
 % [y,t,optw,W,C,confb95,yb] = sskernel(x,t,W)
 %
-% Function `sskernel' returns an optimized kernel density estimate 
-% using a Gauss kernel function.
+% Function `ssvkernel' returns an optimized kernel density estimate 
+% using a Gauss kernel function with bandwidths locally adapted to the data.
 %
 % Examples:
 % >> x = 0.5-0.5*log(rand(1,1e3)); t = linspace(0,3,500);
@@ -36,8 +36,11 @@ function [y,t,optw,gs,C,confb95,yb] = ssvkernel(x,tin,option)
 %       number of points than t. The results, t and y, are obtained by 
 %       interpolating the low resolution sampling points.)
 % optw: Optimal kernel bandwidth.
-% W:    Kernel bandwidths examined. 
-% C:    Cost functions of W.
+% gs:   Stiffness constants of the variable bandwidth examined. 
+%       The stifness constant is defined as a ratio of the optimal fixed
+%       bandwidth to a length of a local interval in which a fixed-kernel
+%       bandwidth optimization was performed. 
+% C:    Cost functions of stiffness constants.
 % conf95
 %       Bootstrap confidence intervals.
 % yb:   Booststrap samples.
@@ -120,7 +123,7 @@ end
 dt = min(diff(t));
 
 % Compute a globally optimal fixed bandwidth
-[yf,~,optWg] = sskernel(x,t);
+%[yf,~,optWg] = sskernel(x,t);
 
 % Create a finest histogram
 y_hist = histc(x_ab,t-dt/2)/dt;
@@ -135,14 +138,11 @@ logexp = @(x) log(1+exp(x));
 ilogexp = @(x) log(exp(x)-1);
 
 %Window sizes
-%WIN = logexp(linspace(ilogexp(max(1*dt,optWg/10)),ilogexp(min(50*optWg,1*T)),M)); %%%
-%WIN = logexp(linspace(ilogexp(max(1*dt,1/2*optWg)),ilogexp(1*T),M)); %Gauss best
 WIN = logexp(linspace(ilogexp(max(1*dt)),ilogexp(1*T),M)); %Gauss best
 W = WIN;        %Bandwidths
 
 for i = M:-1:1
     Win = WIN(i);
-    %W = logexp(linspace(ilogexp(max(1*dt)),ilogexp(Win),M));
     
     for j = 1: length(W)   
         w = W(j);

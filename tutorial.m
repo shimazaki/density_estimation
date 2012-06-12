@@ -81,3 +81,5 @@ W = linspace(0.1*optw,5*optw,100);
 [~,~,optw2,w2,c2] = sskernel(x,t,W);
 %figure; plot(w2,c2,'k.-',w1,c1,'r.-'); axis square;
 
+
+
