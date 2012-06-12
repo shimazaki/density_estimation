@@ -10,10 +10,8 @@ Matlab codes for density estimation.
 - **Source code:** <https://github.com/shimazaki/density_estimation>
 - **Git clone URL:** <git://github.com/shimazaki/density_estimation.git>
 - **Documentation:** 
-
---**Histogram** <http://2000.jukuin.keio.ac.jp/shimazaki/histogram.html>
-
--- **Kernel** <http://2000.jukuin.keio.ac.jp/shimazaki/kernel.html>
+**Histogram** <http://2000.jukuin.keio.ac.jp/shimazaki/histogram.html>
+**Kernel** <http://2000.jukuin.keio.ac.jp/shimazaki/kernel.html>
 
 - **Author homepage:** <http://2000.jukuin.keio.ac.jp/shimazaki/> 
 
