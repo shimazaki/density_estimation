@@ -1,13 +1,13 @@
 %% TUTORIAL OF KERNEL DENSITY ESTIMATION BY SSKERNEL.M AND SSVKERNEL.M
 close all; clear all; 
-figure('Position',[500 100 800 800] );
+%figure('Position',[500 100 800 800] );
 
 %% Create samples
 % First, let's create a sample data set. 
 % Here `x' is a vector containing N samples, following a specified
 % distribution. 
 if 1
-N = 500;                        %Number of samples
+N = 500;                       %Number of samples
 x = 0.5-.5*log(rand(1,N));      %Exponential
 %x = 0.5+1*rand(1,N);           %Square
 %x = 1 + 0.1*randn(1,N);        %Normal
@@ -17,14 +17,16 @@ x = 0.5-.5*log(rand(1,N));      %Exponential
 %    1.2 + 0.03*randn(1,N/10)];
 end
 
+%% Plot a histogram
 % Let's plot the data using a histogram. Here to see the noisy data 
 % data structure, we use the bin-width 5 times smaller than an optimal 
 % bin-width selected by histogram optimization method, 'sshist(x)'. 
 subplot(3,1,1:2); hold on; 
-edges = linspace(min(x),max(x),200);
+edges = linspace(0,2,200);
 b = histc(x,edges); bar(edges,b/sum(b)/min(diff(edges)),1);
 h = findobj(gca,'Type','patch'); 
 set(h,'FaceColor',.7*[1 1 1],'EdgeColor',0.8*[1 1 1]);
+set(gca,'XTickLabel',[]);
 
 %% Create a vector of estimation points
 % Now, we estimate the underlying density from the samples.  
@@ -42,11 +44,13 @@ t = linspace(0,2,L);        %points at which density estimation is made
 
 % Display the results.
 subplot(3,1,1:2);
-hold on; plot(tf,yf,'b-','LineWidth',1);
+hold on; plot(tf,yf,'b-','LineWidth',2);
 set(gca,'XLim',[min(t) max(t)]);
+ylabel('density');
 subplot(3,1,3); hold on; 
-plot(t,optw*ones(1,L),'k-','LineWidth',1);
+plot(t,optw*ones(1,L),'b-','LineWidth',2);
 set(gca,'XLim',[min(t) max(t)]);
+ylabel('bandwidth');
 drawnow;
 
 %% Locally Adaptive Kernel Density Estimation
@@ -57,8 +61,8 @@ drawnow;
 tic; [yv,tv,optwv] = ssvkernel(x,t); toc;
 
 % The locally adaptive bandwidth at time tv is written in optwv.
-subplot(3,1,1:2); hold on; plot(tv,yv,'r-','LineWidth',1);
-subplot(3,1,3); hold on; plot(tv,optwv,'r','LineWidth',1);
+subplot(3,1,1:2); hold on; plot(tv,yv,'r-','LineWidth',2);
+subplot(3,1,3); hold on; plot(tv,optwv,'r','LineWidth',2);
 drawnow;
 
 %% Speed of the fixed kernel density estimate
@@ -83,3 +87,15 @@ W = linspace(0.1*optw,5*optw,100);
 
 
 
+%% (Figure settings)
+subplot(3,1,1:2);
+ax = legend('hist','fixed','variable','Location','Best'); 
+legend(ax,'boxoff'); grid on; ylabel('density');
+
+subplot(3,1,3);
+ax = legend('fix','variable','Location','Best');
+h = findobj(gca,'Type','patch'); 
+set(h,'FaceColor',.7*[1 1 1],'EdgeColor',0.8*[1 1 1]);
+legend(ax,'boxoff'); grid on; ylabel('bandwidth');
+set(gca,'XLim',[min(t) max(t)]);
+drawnow;

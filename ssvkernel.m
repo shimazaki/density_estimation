@@ -1,5 +1,5 @@
-function [y,t,optw,gs,C,confb95,yb] = ssvkernel(x,tin,option)
-% [y,t,optw,W,C,confb95,yb] = sskernel(x,t,W)
+function [y,t,optw,gs,C,confb95,yb] = ssvkernel(x,tin)
+% [y,t,optw,gs,C,confb95,yb] = ssvkernel(x,t,W)
 %
 % Function `ssvkernel' returns an optimized kernel density estimate 
 % using a Gauss kernel function with bandwidths locally adapted to the data.
@@ -41,7 +41,7 @@ function [y,t,optw,gs,C,confb95,yb] = ssvkernel(x,tin,option)
 %       bandwidth to a length of a local interval in which a fixed-kernel
 %       bandwidth optimization was performed. 
 % C:    Cost functions of stiffness constants.
-% conf95
+% conf95:
 %       Bootstrap confidence intervals.
 % yb:   Booststrap samples.
 %
@@ -68,8 +68,8 @@ function [y,t,optw,gs,C,confb95,yb] = ssvkernel(x,tin,option)
 %
 % The locally adaptive bandwidth is obtained by iteratively computing
 % optimal fixed-size bandwidths wihtihn local intervals. The optimal 
-% bandwidths are selected such that they are selected in the intervals, 
-% which are \gamma times larger than the optimal bandwidths themselves. 
+% bandwidths are selected such that they are selected in the intervals 
+% that are \gamma times larger than the optimal bandwidths themselves. 
 % The paramter \gamma was optimized by minimizing the L2 risk estimate.
 %
 % The method is described in 
@@ -95,10 +95,11 @@ function [y,t,optw,gs,C,confb95,yb] = ssvkernel(x,tin,option)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Parameters Settings
-M = 100;         %Number of bandwidths examined for optimization
-                %The local optimal bandwidth is selcted from this. 
+M = 80;            %Number of bandwidths examined for optimization.
 
-WinFunc = 'Boxcar'; %'Gauss','Laplace','Cauchy' 
+WinFunc = 'Boxcar'; %Window function ('Gauss','Laplace','Cauchy') 
+
+nbs = 1*1e2;        %number of bootstrap samples
 
 x = reshape(x,1,numel(x));
 
@@ -215,7 +216,6 @@ disp('optimization completed.');
 if nargout == 0 || nargout >= 6 || nargin >= 3
     disp('computing bootstrap confidence intervals...');
 
-    nbs = 1*1e2;        %number of bootstrap samples
     yb = zeros(nbs,L);
 
     for i = 1: nbs, %disp([i nbs])
@@ -259,39 +259,18 @@ t = tin;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Display results
 if nargout == 0
-            hold on;
+	hold on;
 
-            line([t; t],[y95b; y95u]...
-                    ,'Color',[7 7 7]/8,'LineWidth',1 );
-            plot(t,y95b,'Color',[7 7 7]/9,'LineWidth',1);
-            plot(t,y95u,'Color',[7 7 7]/9,'LineWidth',1);
+	line([t; t],[y95b; y95u]...
+        ,'Color',[7 7 7]/8,'LineWidth',1 );
+	plot(t,y95b,'Color',[7 7 7]/9,'LineWidth',1);
+	plot(t,y95u,'Color',[7 7 7]/9,'LineWidth',1);
 
-            plot(t,y,'Color',[0.9 0.2 0.2],'LineWidth',1);
+	plot(t,y,'Color',[0.9 0.2 0.2],'LineWidth',1);
 
-            grid on;
-            ylabel('density');
-            set(gca,'TickDir','out');  
-else
-    if nargin >= 3
-        if strcmp(option,'Visible')
-            hold on; 
-            
-            if nargout >= 6
-                line([t; t],[y95b; y95u]...
-                    ,'Color',[7 7 7]/8,'LineWidth',1 );
-                plot(t,y95b,'Color',[7 7 7]/9,'LineWidth',1);
-                plot(t,y95u,'Color',[7 7 7]/9,'LineWidth',1);
-            end
-
-            plot(t,y,'Color',[0.9 0.2 0.2],'LineWidth',1);
-
-            grid on;
-            ylabel('density');
-            set(gca,'TickDir','out'); 
-            
-        end
-    end
-    
+	grid on;
+	ylabel('density');
+	set(gca,'TickDir','out');    
 end
 
 function [Cg yv optwp] = CostFunction(y_hist,N,t,dt,optws,WIN,WinFunc,g)
@@ -314,7 +293,6 @@ for k = 1: L
         end
     end
 end
-
 
 %Nadaraya-Watson kernel regression
 PI = pi;
@@ -374,13 +352,12 @@ yv = yv *N/sum(yv*dt); %rate
 %yv = yv / sum(yv*dt);
 
 % Kernel regression
-if 0
-for k = 1: L
-	yv(k) = sum(y_hist.*Gauss(t(k)-t,optwp,PI))...
-        /sum(Gauss(t(k)-t,optwp,PI));
-end
-yv = yv *N/ sum(yv*dt);
-end
+%for k = 1: L
+%	yv(k) = sum(y_hist.*Gauss(t(k)-t,optwp,PI))...
+%        /sum(Gauss(t(k)-t,optwp,PI));
+%end
+%yv = yv *N/ sum(yv*dt);
+%end
 
 %Cost function of the estimated density
 cg = yv.^2 - 2*yv.*y_hist + 2/sqrt(2*pi)./optwp.*y_hist;

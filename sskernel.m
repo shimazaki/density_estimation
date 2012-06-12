@@ -38,7 +38,7 @@ function [y,t,optw,W,C,confb95,yb] = sskernel(x,tin,W)
 % optw: Optimal kernel bandwidth.
 % W:    Kernel bandwidths examined. 
 % C:    Cost functions of W.
-% conf95
+% conf95:
 %       Bootstrap confidence intervals.
 % yb:   Booststrap samples.
 %
