@@ -1,20 +1,25 @@
-## The State-space Analysis of Dynamic Spike Correlation
+## Density Estimation
 
-Matlab codes for dynamic spike correlation analysis. 
+Matlab codes for density estimation. 
 
 
-Shimazaki H., Amari S., Brown E. N., and Gruen S.
-State-space Analysis of Time-varying Higher-order Spike Correlation for Multiple Neural Spike Train Data. 
-PLoS Computational Biology (2012) 8(3): e1002385.
+Shimazaki H. and Shinomoto S.
+A method for selecting the bin size of a time histogram 
+Neural Computation (2007) Vol. 19(6), 1503-1527
 
-http://dx.doi.org/10.1371/journal.pcbi.1002385
+Shimazaki H. and Shinomoto S.
+Kernel Bandwidth Optimization in Spike Rate Estimation. 
+Journal of Computational Neuroscience (2010) 
+Vol. 29 (1-2) 171-182 doi:10.1007/s10827-009-0180-4
 
 <a name="Resources"/>
 ### Resources
 
 - **Source code:** <https://github.com/shimazaki/density_estimation>
 - **Git clone URL:** <git://github.com/shimazaki/density_estimation.git>
-- **Documentation:** <http://2000.jukuin.keio.ac.jp/shimazaki/kernel.html>
+- **Documentation:** 
+-- Histogram <http://2000.jukuin.keio.ac.jp/shimazaki/histogram.html>
+-- Kernel <http://2000.jukuin.keio.ac.jp/shimazaki/kernel.html>
 - **Author homepage:** <http://2000.jukuin.keio.ac.jp/shimazaki/> 
 
 Original papers and presentation slides are included in tutorial directory.  
