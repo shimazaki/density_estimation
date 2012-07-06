@@ -80,10 +80,8 @@ function [y,t,optw,W,C,confb95,yb] = sskernel(x,tin,W)
 % http://2000.jukuin.keio.ac.jp/shimazaki/res/kernel.html
 %
 % See also SSVKERNEL, SSHIST
-%
-%
-% This program is distributed under the terms of 
-% the Creative Commons Attribution License (CC-BY)
+% 
+% 
 % Hideaki Shimazaki 
 % http://2000.jukuin.keio.ac.jp/shimazaki
 
@@ -93,14 +91,14 @@ x = reshape(x,1,numel(x));
 
 if nargin == 1
     T = max(x) - min(x);
-    [~,~,dt_samp] = find( sort(diff(sort(x))),1,'first');
+    [mbuf,nbuf,dt_samp] = find( sort(diff(sort(x))),1,'first');
     tin = linspace(min(x),max(x), min(ceil(T/dt_samp),1e3));
     t = tin;
     x_ab = x( logical((x >= min(tin)) .*(x <= max(tin))) ) ;
 else
     T = max(tin) - min(tin);
     x_ab = x( logical((x >= min(tin)) .*(x <= max(tin))) ) ;
-    [~,~,dt_samp] = find( sort(diff(sort(x_ab))),1,'first');
+    [mbuf,nbuf,dt_samp] = find( sort(diff(sort(x_ab))),1,'first');
 
     if dt_samp > min(diff(tin))
         t = linspace(min(tin),max(tin), min(ceil(T/dt_samp),1e3));

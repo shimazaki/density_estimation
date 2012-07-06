@@ -2,7 +2,7 @@ function [y,t,optw,gs,C,confb95,yb] = ssvkernel(x,tin)
 % [y,t,optw,gs,C,confb95,yb] = ssvkernel(x,t,W)
 %
 % Function `ssvkernel' returns an optimized kernel density estimate 
-% using a Gauss kernel function with bandwidths locally adapted to the data.
+% using a Gauss kernel function with bandwidths locally adapted to data.
 %
 % Examples:
 % >> x = 0.5-0.5*log(rand(1,1e3)); t = linspace(0,3,500);
@@ -87,8 +87,6 @@ function [y,t,optw,gs,C,confb95,yb] = ssvkernel(x,tin)
 % See also SSKERNEL, SSHIST
 %
 %
-% This program is distributed under the terms of 
-% the Creative Commons Attribution License (CC-BY)
 % Hideaki Shimazaki 
 % http://2000.jukuin.keio.ac.jp/shimazaki
 
@@ -105,14 +103,14 @@ x = reshape(x,1,numel(x));
 
 if nargin == 1
     T = max(x) - min(x);
-    [~,~,dt_samp] = find( sort(diff(sort(x))),1,'first');
+    [mbuf,nbuf,dt_samp] = find( sort(diff(sort(x))),1,'first');
     tin = linspace(min(x),max(x), min(ceil(T/dt_samp),1e3));
     t = tin;
     x_ab = x( logical((x >= min(tin)) .*(x <= max(tin))) ) ;
 else
     T = max(tin) - min(tin);
     x_ab = x( logical((x >= min(tin)) .*(x <= max(tin))) ) ;
-    [~,~,dt_samp] = find( sort(diff(sort(x_ab))),1,'first');
+    [mbuf,nbuf,dt_samp] = find( sort(diff(sort(x_ab))),1,'first');
 
     if dt_samp > min(diff(tin))
         t = linspace(min(tin),max(tin), min(ceil(T/dt_samp),1e3));
@@ -139,23 +137,30 @@ logexp = @(x) log(1+exp(x));
 ilogexp = @(x) log(exp(x)-1);
 
 %Window sizes
-WIN = logexp(linspace(ilogexp(max(1*dt)),ilogexp(1*T),M)); %Gauss best
+WIN = logexp(linspace(ilogexp(max(5*dt)),ilogexp(1*T),M));
 W = WIN;        %Bandwidths
 
-for i = M:-1:1
+
+for j = 1:M%M:-1:1
+    w = W(j);
+    yh = fftkernel(y_hist,w/dt);
+    %computing local cost function
+    c(j,:) = yh.^2 - 2*yh.*y_hist + 2/sqrt(2*pi)/w*y_hist;
+end
+
+
+optws = zeros(M,L);
+for i = 1:M
     Win = WIN(i);
     
-    for j = 1: length(W)   
-        w = W(j);
-        yh = fftkernel(y_hist,w/dt);
-        %yh = yh *N/sum(yh*dt);  %rate
-        
+    C_local = zeros(M,L);
+    for j = 1:M
         %computing local cost function
-        c = yh.^2 - 2*yh.*y_hist + 2/sqrt(2*pi)/w*y_hist;
-        C_local(j,:) = fftkernelWin(c,Win/dt,WinFunc); %Eq.15 for t= 1...L   
+        %c = yh.^2 - 2*yh.*y_hist + 2/sqrt(2*pi)/w*y_hist;
+        C_local(j,:) = fftkernelWin(c(j,:),Win/dt,WinFunc); %Eq.15 for t= 1...L   
     end
     
-    [~,n] = min(C_local,[],1); %find optw at t=1...L
+    [mbuf,n] = min(C_local,[],1); %find optw at t=1...L
     optws(i,:) = W(n);
 end
 
@@ -266,12 +271,13 @@ if nargout == 0
 	plot(t,y95b,'Color',[7 7 7]/9,'LineWidth',1);
 	plot(t,y95u,'Color',[7 7 7]/9,'LineWidth',1);
 
-	plot(t,y,'Color',[0.9 0.2 0.2],'LineWidth',1);
+	plot(t,y,'Color',[0.9 0.2 0.2],'LineWidth',2);
 
 	grid on;
 	ylabel('density');
 	set(gca,'TickDir','out');    
 end
+
 
 function [Cg yv optwp] = CostFunction(y_hist,N,t,dt,optws,WIN,WinFunc,g)
 %Selecting w/W = g bandwidth
@@ -295,34 +301,12 @@ for k = 1: L
 end
 
 %Nadaraya-Watson kernel regression
-PI = pi;
 optwp = zeros(1,L);
-
-if strcmp(WinFunc,'Laplace')
-    for k = 1: L
-        % Laplace window
-        Lap = Laplace(t(k)-t,optwv/g); 
-        optwp(k) = sum(optwv.*Lap)/sum(Lap);
-    end
-elseif strcmp(WinFunc,'Cauchy')
-    for k = 1: L
-        % Cauchy window
-        Cau = Cauchy(t(k)-t,optwv/g); 
-        optwp(k) = sum(optwv.*Cau)/sum(Cau);
-    end  
-elseif strcmp(WinFunc,'Boxcar')
-    for k = 1: L
-        % Boxcar window
-        Box = Boxcar(t(k)-t,optwv/g); 
-        optwp(k) = sum(optwv.*Box)/sum(Box);
-    end  
-else
-    for k = 1: L
-        % Gauss window
-        G = Gauss(t(k)-t,optwv/g); 
-        optwp(k) = sum(optwv.*G)/sum(G); 
-    end
+for k = 1: L
+    Z = feval(WinFunc,t(k)-t,optwv/g); 
+    optwp(k) = sum(optwv.*Z)/sum(Z);
 end
+        
 %optwp = optwv;
 %Density estimation with the variable bandwidth
 
@@ -347,16 +331,23 @@ yv = yv *N/sum(yv*dt); %rate
 % Sample points estimator
 %yv = zeros(1,L);
 %for k = 1: L
-%    yv(k) = sum( y_hist_nz*dt.*Gauss(t(k)-t_nz,optwp(idx),PI) ) / N;    
+%    yv(k) = sum( y_hist_nz*dt.*Gauss(t(k)-t_nz,optwp(idx)) ) / N;    
 %end
+
 %yv = yv / sum(yv*dt);
 
 % Kernel regression
 %for k = 1: L
-%	yv(k) = sum(y_hist.*Gauss(t(k)-t,optwp,PI))...
-%        /sum(Gauss(t(k)-t,optwp,PI));
+%	yv(k) = sum(y_hist.*Gauss(t(k)-t,optwp))...
+%        /sum(Gauss(t(k)-t,optwp));
 %end
 %yv = yv *N/ sum(yv*dt);
+%end
+
+%yv = zeros(1,L);
+%for k = 1: L
+%    yv(k) = sum( y_hist.*Gauss(t(k),optwp).*Boxcar(t(k)-t,optwp/g) ) ...
+%        / sum(Gauss(t(k),optwp).*Boxcar(t(k)-t,optwp/g));    
 %end
 
 %Cost function of the estimated density
@@ -377,6 +368,8 @@ f = [-(0:n/2) (n/2-1:-1:1)]/n;
 
 % Gauss
 K = exp(-0.5*(w*2*pi*f).^2);
+
+% Laplace
 %K = 1 ./ ( 1+ (w*2*pi*f).^2/2 );
 
 y = ifft(X.*K,n);
@@ -387,24 +380,25 @@ L = length(x);
 Lmax = L+3*w; %take 3 sigma to avoid aliasing 
 
 %n = 2^(nextpow2(Lmax)); 
-n = 2^(ceil(log2(Lmax))); 
+n = 2^(ceil(log2(Lmax)));
 
 X = fft(x,n);
 
 f = [-(0:n/2) (n/2-1:-1:1)]/n;
+t = 2*pi*f;
 
-if strcmp(WinFunc,'Laplace')
+if strcmp(WinFunc,'Boxcar')
+    % Boxcar
+    a = sqrt(12)*w;
+    %K = (exp(1i*2*pi*f*a/2) - exp(-1i*2*pi*f*a/2)) ./(1i*2*pi*f*a);
+    K = 2*sin(a*t/2)./(a*t);
+    K(1) = 1;
+elseif strcmp(WinFunc,'Laplace')
     % Laplace
     K = 1 ./ ( 1+ (w*2*pi.*f).^2/2 );
 elseif strcmp(WinFunc,'Cauchy')
     % Cauchy
     K = exp(-w*abs(2*pi*f));
-elseif strcmp(WinFunc,'Boxcar')
-    % Boxcar
-    a = sqrt(12)*w;
-    %K = (exp(1i*2*pi*f*a/2) - exp(-1i*2*pi*f*a/2)) ./(1i*2*pi*f*a);
-    K = 2./(a* 2*pi*f) .* sin(a/2.* 2*pi*f);
-    K(1) = 1;
 else
     % Gauss
     K = exp(-0.5*(w*2*pi*f).^2);
@@ -424,4 +418,9 @@ y = 1./(pi*w.*(1+ (x./w).^2));
 
 function y = Boxcar(x,w)
 a = sqrt(12)*w;
-y = 1./a .* ( x < a/2 ) .* ( x > -a/2 );
+%y = 1./a .* ( x < a/2 ) .* ( x > -a/2 );
+%y = 1./a .* ( abs(x) < a/2 );
+y = 1./a; y(abs(x) > a/2) = 0; %speed optimization
+
+
+

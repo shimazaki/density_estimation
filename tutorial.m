@@ -1,20 +1,21 @@
 %% TUTORIAL OF KERNEL DENSITY ESTIMATION BY SSKERNEL.M AND SSVKERNEL.M
-close all; clear all; 
-%figure('Position',[500 100 800 800] );
+clear all; close all;
 
 %% Create samples
 % First, let's create a sample data set. 
 % Here `x' is a vector containing N samples, following a specified
 % distribution. 
-if 1
-N = 500;                       %Number of samples
-x = 0.5-.5*log(rand(1,N));      %Exponential
+
+N = 500;                        %Number of samples
+%x = 0.5-.5*log(rand(1,N));     %Exponential
 %x = 0.5+1*rand(1,N);           %Square
+
 %x = 1 + 0.1*randn(1,N);        %Normal
 
-%x = [0.5-.5*log(rand(1,N))...   %Complex
-%    0.4 + 0.03*randn(1,N/5) ...
-%    1.2 + 0.03*randn(1,N/10)];
+if 1
+x = [0.5-.5*log(rand(1,N))...   %Complex
+    0.4 + 0.03*randn(1,N/5) ...
+    1.2 + 0.03*randn(1,N/10)];
 end
 
 %% Plot a histogram
@@ -30,7 +31,7 @@ set(gca,'XTickLabel',[]);
 
 %% Create a vector of estimation points
 % Now, we estimate the underlying density from the samples.  
-L = 1000;                    %number of estimation points
+L = 2000;                    %number of estimation points
 t = linspace(0,2,L);        %points at which density estimation is made
                             %points must be equi-distant.
 
@@ -58,7 +59,7 @@ drawnow;
 %t = linspace(0.3,0.6,L);
 % The function ssvkernel returns the kerenel density estimate using
 % bandwidths locally adaptive to the data.
-tic; [yv,tv,optwv] = ssvkernel(x,t); toc;
+tic; [yv,tv,optwv,gs,cs] = ssvkernel(x,t); toc;
 
 % The locally adaptive bandwidth at time tv is written in optwv.
 subplot(3,1,1:2); hold on; plot(tv,yv,'r-','LineWidth',2);
@@ -72,7 +73,7 @@ disp('sskernel'); tic; [yss,tss,optw] = sskernel(x,t,optw); toc;
 disp('ksdensity'); tic; yks = ksdensity(x,t,'width',optw); toc; 
 % The method should be faster than ksdensity even if the bandwidth is
 % optimized.
-disp('sskernel optimization'); tic; [~,~,~] = sskernel(x,t); toc;
+disp('sskernel optimization'); tic; [yv,tv,wb] = sskernel(x,t); toc;
 
 % Note on the third input argument.
 % If the third input argument, W, is a vector, the method search the
@@ -81,19 +82,18 @@ disp('sskernel optimization'); tic; [~,~,~] = sskernel(x,t); toc;
 % section search. We can looked at the estimated error of the bandwidths as
 % follows. 
 W = linspace(0.1*optw,5*optw,100);
-[~,~,optw1,w1,c1] = sskernel(x,t);
-[~,~,optw2,w2,c2] = sskernel(x,t,W);
+[yv1,tv1,optw1,w1,c1] = sskernel(x,t);
+[yv2,tv2,optw2,w2,c2] = sskernel(x,t,W);
 %figure; plot(w2,c2,'k.-',w1,c1,'r.-'); axis square;
-
 
 
 %% (Figure settings)
 subplot(3,1,1:2);
-ax = legend('hist','fixed','variable','Location','Best'); 
+ax = legend('histogram','fixed','locally adaptive','Location','Best'); 
 legend(ax,'boxoff'); grid on; ylabel('density');
 
 subplot(3,1,3);
-ax = legend('fix','variable','Location','Best');
+ax = legend('fix','locally adaptive','Location','Best');
 h = findobj(gca,'Type','patch'); 
 set(h,'FaceColor',.7*[1 1 1],'EdgeColor',0.8*[1 1 1]);
 legend(ax,'boxoff'); grid on; ylabel('bandwidth');
