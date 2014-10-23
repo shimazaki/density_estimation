@@ -78,14 +78,14 @@ function [y,t,optw,gs,C,confb95,yb] = ssvkernel(x,tin)
 % Journal of Computational Neuroscience 2010
 % http://dx.doi.org/10.1007/s10827-009-0180-4
 %
-% * Instead of a Gaussian window described in the paper, a boxcar window is 
-% used in this program.
 %
 % For more information, please visit 
 % http://2000.jukuin.keio.ac.jp/shimazaki/res/kernel.html
 %
 % See also SSKERNEL, SSHIST
 %
+% Bug fix
+% 131004 fixed a problem for large values
 %
 % Hideaki Shimazaki 
 % http://2000.jukuin.keio.ac.jp/shimazaki
@@ -118,7 +118,7 @@ else
         t = tin;
     end
 end
-
+clear mbuf nbuf;
 dt = min(diff(t));
 
 % Compute a globally optimal fixed bandwidth
@@ -133,15 +133,15 @@ N = sum(y_hist*dt);
 % Computing local MISEs and optimal bandwidths
 disp('computing local bandwidths...');
 
-logexp = @(x) log(1+exp(x)); 
-ilogexp = @(x) log(exp(x)-1);
+%logexp = @(x) log(1+exp(x)); 
+%ilogexp = @(x) log(exp(x)-1);
 
 %Window sizes
 WIN = logexp(linspace(ilogexp(max(5*dt)),ilogexp(1*T),M));
 W = WIN;        %Bandwidths
 
-
-for j = 1:M%M:-1:1
+c = zeros(M,L);
+for j = 1:M
     w = W(j);
     yh = fftkernel(y_hist,w/dt);
     %computing local cost function
@@ -221,7 +221,7 @@ disp('optimization completed.');
 if nargout == 0 || nargout >= 6 || nargin >= 3
     disp('computing bootstrap confidence intervals...');
 
-    yb = zeros(nbs,L);
+    yb = zeros(nbs,length(tin));
 
     for i = 1: nbs, %disp([i nbs])
         Nb = poissrnd(N);
@@ -234,21 +234,17 @@ if nargout == 0 || nargout >= 6 || nargin >= 3
         y_histb_nz = y_histb(idx); 
         t_nz = t(idx);
         for k = 1: L
-            yb(i,k) = sum(y_histb_nz.*Gauss(t(k)-t_nz,optw(k)))/Nb;
+            yb_buf(k) = sum(y_histb_nz.*Gauss(t(k)-t_nz,optw(k)))/Nb;
         end
-        yb(i,:) = yb(i,:) / sum(yb(i,:)*dt);
+        yb_buf = yb_buf / sum(yb_buf*dt);
+        
+        yb(i,:) = interp1(t,yb_buf,tin);
         
     end
 
     ybsort = sort(yb);
     y95b = ybsort(floor(0.05*nbs),:);
     y95u = ybsort(floor(0.95*nbs),:); 
-
-    for i = 1: nbs
-        yb(i,:) = interp1(t,yb(i,:),tin);
-    end
-    y95b = interp1(t,y95b,tin);
-    y95u = interp1(t,y95u,tin);
     
     confb95 = [y95b; y95u];
     
@@ -287,7 +283,7 @@ optwv = zeros(1,L);
 for k = 1: L
 	gs = optws(:,k)'./WIN;
         
-	if g > max( gs ) 
+	if g > max(gs) 
         optwv(k) = min(WIN);
     else
         if g < min(gs)
@@ -421,6 +417,23 @@ a = sqrt(12)*w;
 %y = 1./a .* ( x < a/2 ) .* ( x > -a/2 );
 %y = 1./a .* ( abs(x) < a/2 );
 y = 1./a; y(abs(x) > a/2) = 0; %speed optimization
+
+
+
+function y = logexp(x) 
+if x<1e2 
+    y = log(1+exp(x));
+else
+    y = x;
+end
+
+function y = ilogexp(x)
+%ilogexp = @(x) log(exp(x)-1);
+if x<1e2
+    y = log(exp(x)-1);
+else
+    y = x;
+end
 
 
 
