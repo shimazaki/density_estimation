@@ -30,7 +30,7 @@ function [optN, optD, edges, C, N] = sshist(x,N)
 % N (optinal):
 %       A vector that specifies the number of bins to be examined. 
 %       The optimal number of bins is selected from the elements of N.  
-%       Default value is N = 2:100.
+%       Default value is N = 2:500.
 %       * Do not search binwidths smaller than a sampling resolution of data.
 %
 % Output argument
@@ -39,6 +39,9 @@ function [optN, optD, edges, C, N] = sshist(x,N)
 % C:    Cost function of N.
 %
 % See also SSKERNEL
+%
+% Bug fix
+% 141023 changed how to select bin-edges
 %
 % Copyright (c) 2009 2010, Hideaki Shimazaki All rights reserved.
 % http://2000.jukuin.keio.ac.jp/shimazaki
@@ -69,8 +72,9 @@ for i = 1: length(N)
 
        shift = linspace(0,D(i),SN);
        for p = 1 : SN
-               edges = linspace(x_min+shift(p)-D(i)/2,...
-                        x_max+shift(p)-D(i)/2,N(i)+1);   % Bin edges
+               edges = linspace(x_min-D(i)+shift(p),...
+                   x_max+shift(p),N(i)+1);        %Bin edges
+
 
                ki = histc(x,edges);               % Count # of events in bins
                ki = ki(1:end-1);
