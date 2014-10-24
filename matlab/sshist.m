@@ -40,8 +40,6 @@ function [optN, optD, edges, C, N] = sshist(x,N)
 %
 % See also SSKERNEL
 %
-% Bug fix
-% 141023 changed how to select bin-edges
 %
 % Copyright (c) 2009 2010, Hideaki Shimazaki All rights reserved.
 % http://2000.jukuin.keio.ac.jp/shimazaki
@@ -72,9 +70,8 @@ for i = 1: length(N)
 
        shift = linspace(0,D(i),SN);
        for p = 1 : SN
-               edges = linspace(x_min-D(i)+shift(p),...
-                   x_max+shift(p),N(i)+1);        %Bin edges
-
+               edges = linspace(x_min+shift(p)-D(i)/2,...
+                 x_max+shift(p)-D(i)/2,N(i)+1);   % Bin edges
 
                ki = histc(x,edges);               % Count # of events in bins
                ki = ki(1:end-1);
@@ -93,9 +90,10 @@ C = mean(Cs,2);
 [Cmin idx] = min(C);
 optN = N(idx);                          % Optimal number of bins
 optD = D(idx);                         % *Optimal binwidth
+edges = linspace(x_min,x_max,optN);  % Optimal segmentation
 
-[Cminp idxp] = min(Cs(idx,:));
-shift = linspace(0,D(idx),SN);
-edges = linspace(x_min+shift(idxp)-D(idx)/2,...
-                        x_max+shift(idxp)-D(idx)/2,N(idx)+1);
-%edges = linspace(x_min,x_max,N(idx));  % Optimal segmentation
+%[Cminp idxp] = min(Cs(idx,:));
+%shift = linspace(0,D(idx),SN);
+%edges = linspace(x_min+shift(idxp)-D(idx)/2,...
+%                        x_max+shift(idxp)-D(idx)/2,N(idx)+1);
+
