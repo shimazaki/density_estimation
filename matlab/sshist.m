@@ -1,5 +1,5 @@
 function [optN, optD, edges, C, N] = sshist(x,N)
-% [optN, edges, C, N] = sshist(x,N)
+% [optN, optD, edges, C, N] =sshist(x,N)
 %
 % Function `sshist' returns the optimal number of bins in a histogram
 % used for density estimation.
