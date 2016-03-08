@@ -1,6 +1,6 @@
 ## Density Estimation
 
-Matlab codes for density estimation. 
+Matlab/Python codes for optimal density estimation. 
 
 
 
@@ -10,12 +10,13 @@ Matlab codes for density estimation.
 - **Source code:** <https://github.com/shimazaki/density_estimation>
 - **Git clone URL:** <git://github.com/shimazaki/density_estimation.git>
 - **Documentation:** 
-**Histogram** <http://2000.jukuin.keio.ac.jp/shimazaki/histogram.html>
-**Kernel** <http://2000.jukuin.keio.ac.jp/shimazaki/kernel.html>
+**Histogram** <http://2000.jukuin.keio.ac.jp/shimazaki/res/histogram.html>
+**Kernel** <http://2000.jukuin.keio.ac.jp/shimazaki/res/kernel.html>
 
 - **Author homepage:** <http://2000.jukuin.keio.ac.jp/shimazaki/> 
 
-Original papers and presentation slides are included in tutorial directory.  
+Original papers and presentation slides are included in tutorial directory. 
+
 - **HISTOGRAM**
 Shimazaki H. and Shinomoto S.
 A method for selecting the bin size of a time histogram 
@@ -28,8 +29,11 @@ Journal of Computational Neuroscience (2010)
 Vol. 29 (1-2) 171-182 doi:10.1007/s10827-009-0180-4
 
 
+### License
+These codes are available under the free software license. The license type depends on contributing authors. Please see each file for specific license type. Matlab codes are available under Apache 2.0 or BSD license. 
 
-tutorial.m
+
+tutorial.m (Matlab)
 ```matlab
 
 %% TUTORIAL OF KERNEL DENSITY ESTIMATION BY SSKERNEL.M AND SSVKERNEL.M
