@@ -90,7 +90,7 @@ C = mean(Cs,2);
 [Cmin idx] = min(C);
 optN = N(idx);                          % Optimal number of bins
 optD = D(idx);                         % *Optimal binwidth
-edges = linspace(x_min,x_max,optN);  % Optimal segmentation
+edges = linspace(x_min,x_max,optN+1);  % Optimal segmentation
 
 %[Cminp idxp] = min(Cs(idx,:));
 %shift = linspace(0,D(idx),SN);
