@@ -1,0 +1,3 @@
+[submodule "python/AdaptiveKDE"]
+	path = python/AdaptiveKDE
+	url = https://github.com/cooperlab/AdaptiveKDE.git
