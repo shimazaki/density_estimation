@@ -2,7 +2,9 @@
 
 Matlab/Python codes for optimal density estimation. 
 
+This repositry includes submodule. Please clone this as
 
+ git clone --recurse-submodules https://github.com/shimazaki/density_estimation.git
 
 <a name="Resources"/>
 ### Resources
