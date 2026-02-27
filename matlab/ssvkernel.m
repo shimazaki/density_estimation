@@ -125,7 +125,8 @@ dt = min(diff(t));
 %[yf,~,optWg] = sskernel(x,t);
 
 % Create a finest histogram
-y_hist = histc(x_ab,t-dt/2)/dt;
+y_hist = histc(x_ab,[t-dt/2, t(end)+dt/2])/dt;
+y_hist = y_hist(1:end-1);
 L = length(y_hist);
 N = sum(y_hist*dt);
 
@@ -228,8 +229,9 @@ if nargout == 0 || nargout >= 6 || nargin >= 3
         %Nb = N;
         idx = ceil(rand(1,Nb)*N);
         xb = x_ab(idx);
-        y_histb = histc(xb,t-dt/2);
-        
+        y_histb = histc(xb,[t-dt/2, t(end)+dt/2]);
+        y_histb = y_histb(1:end-1);
+
         idx = find(y_histb ~= 0);
         y_histb_nz = y_histb(idx); 
         t_nz = t(idx);

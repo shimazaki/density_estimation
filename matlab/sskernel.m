@@ -113,7 +113,8 @@ end
 dt = min(diff(t));
 
 % Create a finest histogram
-y_hist = histc(x_ab,t-dt/2);
+y_hist = histc(x_ab,[t-dt/2, t(end)+dt/2]);
+y_hist = y_hist(1:end-1);
 L = length(y_hist);
 N = sum(y_hist);
 y_hist = y_hist/N/dt;   %density
@@ -204,7 +205,8 @@ if nargout == 0 || nargout >= 6
     
         idx = ceil(rand(1,N)*N);
         xb = x_ab(idx);
-        y_histb = histc(xb,t-dt/2)/dt/N;
+        y_histb = histc(xb,[t-dt/2, t(end)+dt/2])/dt/N;
+        y_histb = y_histb(1:end-1);
     
         yb_buf = fftkernel(y_histb,optw/dt);
         yb_buf = yb_buf / sum(yb_buf*dt);
